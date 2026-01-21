@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Academic Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .academic-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 360px;
+      text-align: center;
+    }
+    .academic-container h2 {
+      margin-bottom: 20px;
+    }
+    .academic-container select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .academic-container button {
+      width: 100%;
+      padding: 10px;
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .academic-container button:hover {
+      background: #0056b3;
+    }
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="academic-container">
+    <h2>Select Academic Year & Course</h2>
+
+
+
+    <!-- B.Tech Year Dropdown -->
+    <label for="btechYear">B.Tech Year:</label>
+    <select id="btechYear" required>
+      <option value="">-- Select B.Tech Year --</option>
+      <option value="1st">1st B.Tech</option>
+      <option value="2nd">2nd B.Tech</option>
+      <option value="3rd">3rd B.Tech</option>
+      <option value="4th">4th B.Tech</option>
+    </select>
+ <!-- Academic Year Dropdown -->
+    <label for="academicYear">Academic Year:</label>
+    <select id="academicYear" required>
+      <option value="">-- Select Year --</option>
+      <option value="2023-2024">2023-2024</option>
+      <option value="2024-2025">2024-2025</option>
+      <option value="2025-2026">2025-2026</option>
+      <option value="2026-2027">2026-2027</option>
+    </select>
+    <button id="submitBtn">Submit</button>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    const submitBtn = document.getElementById('submitBtn');
+    const message = document.getElementById('message');
+
+    submitBtn.addEventListener('click', () => {
+      const academicYear = document.getElementById('academicYear').value;
+      const btechYear = document.getElementById('btechYear').value;
+
+      if (!academicYear || !btechYear) {
+        message.textContent = "Please select both fields.";
+        message.style.color = "red";
+        return;
+      }
+
+      // For now just show the selection
+      message.textContent = `You selected: ${academicYear}, ${btechYear} B.Tech`;
+      message.style.color = "green";
+
+      // 👉 Later you can send this data to backend:
+      // fetch("http://localhost:5000/saveDetails", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ academicYear, btechYear })
+      // });
+    });
+  </script>
+</body>
+</html>

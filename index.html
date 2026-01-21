@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#007BFF">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Authentication</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .auth-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 340px;
+      text-align: center;
+    }
+    .auth-container img {
+      width: 120px;
+      margin-bottom: 15px;
+    }
+    .auth-container h2 {
+      margin: 15px 0;
+    }
+    .auth-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .auth-container button {
+      width: 100%;
+      padding: 10px;
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .auth-container button:hover {
+      background: #0056b3;
+    }
+    .links {
+      margin-top: 10px;
+    }
+    .links a {
+      display: block;
+      margin: 5px 0;
+      color: #007BFF;
+      text-decoration: none;
+    }
+    .links a:hover {
+      text-decoration: underline;
+    }
+    .message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <!-- Logo -->
+    <img src="logo.jpg" alt="Institution Logo">
+
+    <!-- Login Section (default visible) -->
+    <div id="loginSection">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+      <div class="message" id="loginMsg"></div>
+
+      <div class="links">
+        <a href="#" id="forgotPassword">Forgot Password?</a>
+        <a href="#" id="showRegister">New Registration</a>
+      </div>
+    </div>
+
+    <!-- Register Section (hidden initially) -->
+    <div id="registerSection" style="display:none;">
+      <h2>Register</h2>
+      <form id="registerForm">
+        <input type="text" id="regUsername" placeholder="Username" required>
+        <input type="password" id="regPassword" placeholder="Password" required>
+        <button type="submit">Register</button>
+      </form>
+      <div class="message" id="registerMsg"></div>
+      <div class="links">
+        <a href="#" id="backToLogin">Back to Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sections
+    const loginSection = document.getElementById('loginSection');
+    const registerSection = document.getElementById('registerSection');
+
+    // Toggle to Register
+    document.getElementById('showRegister').addEventListener('click', (e) => {
+      e.preventDefault();
+      loginSection.style.display = "none";
+      registerSection.style.display = "block";
+    });
+
+    // Toggle back to Login
+    document.getElementById('backToLogin').addEventListener('click', (e) => {
+      e.preventDefault();
+      registerSection.style.display = "none";
+      loginSection.style.display = "block";
+    });
+
+    // Forgot password placeholder
+    document.getElementById('forgotPassword').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert("Forgot password functionality not implemented yet.");
+    });
+
+    // Login form
+    const loginForm = document.getElementById('loginForm');
+    const loginMsg = document.getElementById('loginMsg');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (data.msg.toLowerCase().includes("successful")) {
+        // ✅ Redirect to academic.html after successful login
+        window.location.href = "academic.html";
+      } else {
+        loginMsg.textContent = data.msg;
+        loginMsg.style.color = "red";
+      }
+    });
+
+    // Register form
+    const registerForm = document.getElementById('registerForm');
+    const registerMsg = document.getElementById('registerMsg');
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+
+      const res = await fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+      registerMsg.textContent = data.msg;
+      registerMsg.style.color = data.msg.includes("success") ? "green" : "red";
+
+      // If registration successful, go back to login
+      if (data.msg.includes("success")) {
+        setTimeout(() => {
+          registerSection.style.display = "none";
+          loginSection.style.display = "block";
+          loginMsg.textContent = "Registration successful! Please log in.";
+          loginMsg.style.color = "green";
+        }, 1500);
+      }
+    });
+  </script>
+</body>
+</html>
