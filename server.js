@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB (no deprecated options)
-mongoose.connect("mongodb://127.0.0.1:27017/loginDB")
+mongoose.connect("mongodb+srv://jayanth:jayanth777@cluster1.i46xsmi.mongodb.net/?appName=Cluster1")
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error(err));
 
@@ -51,4 +51,5 @@ app.post("/login", async (req, res) => {
 });
 
 // Start server
+
 app.listen(5000, () => console.log("Server running on http://localhost:5000"));
