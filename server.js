@@ -16,14 +16,28 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
-// User model
+// --- USER MODEL ---
 const UserSchema = new mongoose.Schema({
   username: String,
   password: String
 });
 const User = mongoose.model("User", UserSchema);
 
-// Register endpoint
+// --- EVENT MODEL (Added for persistence) ---
+const EventSchema = new mongoose.Schema({
+  participantCount: Number,
+  rollNumbers: [String],
+  academicYear: String,
+  eventName: String,
+  venue: String,
+  organiser: String,
+  eventDate: Date,
+  status: { type: String, default: "Pending" },
+  createdAt: { type: Date, default: Date.now }
+});
+const Event = mongoose.model("Event", EventSchema);
+
+// Auth Endpoints
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -36,7 +50,6 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// Login endpoint
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -49,6 +62,18 @@ app.post("/login", async (req, res) => {
     res.json({ msg: "Login successful" });
   } catch (err) {
     res.status(500).json({ msg: "Error logging in" });
+  }
+});
+
+// --- NEW: EVENT SUBMISSION ENDPOINT ---
+app.post("/submit-event", async (req, res) => {
+  try {
+    const newEvent = new Event(req.body);
+    await newEvent.save();
+    res.json({ msg: "Event request stored successfully", event: newEvent });
+  } catch (err) {
+    console.error("Submission Error:", err);
+    res.status(500).json({ msg: "Error storing event details" });
   }
 });
 
