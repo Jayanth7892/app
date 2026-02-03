@@ -18,12 +18,12 @@ mongoose.connect(process.env.MONGO_URI)
 
 // --- USER MODEL ---
 const UserSchema = new mongoose.Schema({
-  username: String,
-  password: String
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
 });
 const User = mongoose.model("User", UserSchema);
 
-// --- EVENT MODEL (Added for persistence) ---
+// --- EVENT MODEL ---
 const EventSchema = new mongoose.Schema({
   participantCount: Number,
   rollNumbers: [String],
@@ -37,7 +37,7 @@ const EventSchema = new mongoose.Schema({
 });
 const Event = mongoose.model("Event", EventSchema);
 
-// Auth Endpoints
+// Registration Endpoint
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -50,6 +50,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
+// Login Endpoint
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -65,7 +66,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// --- NEW: EVENT SUBMISSION ENDPOINT ---
+// Endpoint to store event details
 app.post("/submit-event", async (req, res) => {
   try {
     const newEvent = new Event(req.body);
@@ -74,6 +75,16 @@ app.post("/submit-event", async (req, res) => {
   } catch (err) {
     console.error("Submission Error:", err);
     res.status(500).json({ msg: "Error storing event details" });
+  }
+});
+
+// Endpoint to fetch all stored events
+app.get("/get-events", async (req, res) => {
+  try {
+    const events = await Event.find().sort({ createdAt: -1 });
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ msg: "Error fetching events" });
   }
 });
 
