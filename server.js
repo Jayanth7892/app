@@ -87,19 +87,23 @@ app.patch("/upload-photos/:id", async (req, res) => {
     // "Validation" means checking the SERVER time, not the user's device time.
     // This prevents users from hacking by changing their phone's clock.
     const now = new Date();
+    // FIX: Convert Server Time (UTC) to IST (Indian Standard Time)
+    const istDate = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const eventDate = new Date(event.eventDate);
 
-    // Reset times to compare just the dates
-    const todayStr = now.toDateString();
+    // Reset times to compare just the dates (using IST for "today")
+    const todayStr = istDate.toDateString();
     const eventDateStr = eventDate.toDateString();
 
-    const isSameDay = todayStr === eventDateStr;
-    const currentHour = now.getHours();
-    const isTimeWindow = currentHour >= 9 && currentHour < 17; // 9:00 - 16:59
+    const isSameDay = todayStr === eventDateStr; // Compare roughly 
+    const currentHour = istDate.getHours();
+    const isTimeWindow = currentHour >= 9 && currentHour < 17; // 9:00 - 16:59 IST
 
     // Allow admins to override? (Optional, but strict for students)
     if (!isSameDay || !isTimeWindow) {
-      return res.status(403).json({ msg: "Uploads allowed only on Event Date between 9 AM - 5 PM" });
+      return res.status(403).json({
+        msg: `Uploads allowed only on Event Date between 9 AM - 5 PM IST (Server IST Time: ${currentHour}:00)`
+      });
     }
 
     // Update using $push to APPEND photos instead of replacing
