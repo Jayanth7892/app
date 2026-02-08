@@ -78,6 +78,14 @@ app.patch("/update-status/:id", async (req, res) => {
   } catch (err) { res.status(500).json({ msg: "Failed" }); }
 });
 
+const Evidence = mongoose.model("Evidence", new mongoose.Schema({
+  eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
+  fileName: String,
+  fileType: String, // 'application/pdf', 'image/png', etc.
+  data: String, // Base64 string
+  uploadedAt: { type: Date, default: Date.now }
+}));
+
 app.patch("/upload-photos/:id", async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -106,16 +114,40 @@ app.patch("/upload-photos/:id", async (req, res) => {
       });
     }
 
-    // Update using $push to APPEND photos instead of replacing
-    await Event.findByIdAndUpdate(req.params.id, {
-      $push: { eventPhotos: { $each: req.body.photos } }
-    });
+    // Save Evidence documents (New Collection)
+    const files = req.body.photos; // Expecting array of { name, type, data }
+    if (files && files.length > 0) {
+      // Handle both old format (array of strings) and new format (array of objects)
+      // If frontend sends strings, wrap them. If objects, use them.
+      const evidenceDocs = files.map(f => {
+        if (typeof f === 'string') {
+          return { eventId: event._id, fileName: "Image", fileType: "image/jpeg", data: f };
+        }
+        return {
+          eventId: event._id,
+          fileName: f.name || "File",
+          fileType: f.type || "unknown",
+          data: f.data
+        };
+      });
+      await Evidence.insertMany(evidenceDocs);
 
-    res.json({ msg: "Photos uploaded successfully" });
+      // OPTIONAL: Update status to 'Evidence Uploaded' or keep 'Approved'?
+      // keeping Approved as per workflow.
+    }
+
+    res.json({ msg: "Files uploaded successfully" });
   } catch (err) {
     console.error("Upload Error:", err);
     res.status(500).json({ msg: "Upload failed" });
   }
+});
+
+app.get("/get-evidence/:eventId", async (req, res) => {
+  try {
+    const evidence = await Evidence.find({ eventId: req.params.eventId });
+    res.json(evidence);
+  } catch (err) { res.status(500).json({ msg: "Error fetching evidence" }); }
 });
 
 const PORT = process.env.PORT || 5000;
